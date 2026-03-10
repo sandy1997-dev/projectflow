@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
-import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "ProjectFlow – Team Task Management",
-  description: "A Trello-style project management tool with real-time collaboration, drag-and-drop boards, and analytics.",
-  keywords: ["project management", "kanban", "task board", "team collaboration"],
+  title: "ProjectFlow – Team Project Management",
+  description: "Real-time Kanban boards, team collaboration, and analytics.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+      </head>
       <body>
         <Providers>{children}</Providers>
-        <Toaster />
       </body>
     </html>
   );

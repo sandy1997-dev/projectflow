@@ -1,9 +1,21 @@
+export type WorkspaceRole = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+export type UserRole = "ADMIN" | "MEMBER";
+export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type CardStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+
 export interface User {
   id: string;
   name?: string | null;
   email: string;
   image?: string | null;
-  role: "ADMIN" | "MEMBER";
+  role: UserRole;
+}
+
+export interface WorkspaceMember {
+  id: string;
+  user: User;
+  role: WorkspaceRole;
+  joinedAt: string;
 }
 
 export interface Workspace {
@@ -14,12 +26,6 @@ export interface Workspace {
   plan: "FREE" | "PRO" | "ENTERPRISE";
   members: WorkspaceMember[];
   boards: Board[];
-}
-
-export interface WorkspaceMember {
-  id: string;
-  user: User;
-  role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
 }
 
 export interface Board {
@@ -51,12 +57,11 @@ export interface Card {
   title: string;
   description?: string;
   position: number;
-  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-  status: "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+  priority: Priority;
+  status: CardStatus;
   dueDate?: string;
   startDate?: string;
   coverColor?: string;
-  coverImage?: string;
   assignee?: User;
   creator: User;
   list: List;
@@ -71,53 +76,15 @@ export interface Card {
   updatedAt: string;
 }
 
-export interface Label {
-  id: string;
-  name: string;
-  color: string;
-}
+export interface Label { id: string; name: string; color: string; }
+export interface Comment { id: string; content: string; author: User; createdAt: string; }
+export interface Attachment { id: string; name: string; url: string; type: string; size: number; }
+export interface Checklist { id: string; title: string; items: ChecklistItem[]; progress: number; }
+export interface ChecklistItem { id: string; content: string; isCompleted: boolean; }
+export interface Notification { id: string; type: string; message: string; isRead: boolean; metadata?: any; createdAt: string; }
 
-export interface Comment {
-  id: string;
-  content: string;
-  author: User;
-  createdAt: string;
-}
-
-export interface Attachment {
-  id: string;
-  name: string;
-  url: string;
-  type: string;
-  size: number;
-  createdAt: string;
-}
-
-export interface Checklist {
-  id: string;
-  title: string;
-  items: ChecklistItem[];
-  progress: number;
-}
-
-export interface ChecklistItem {
-  id: string;
-  content: string;
-  isCompleted: boolean;
-}
-
-export interface Notification {
-  id: string;
-  type: string;
-  message: string;
-  isRead: boolean;
-  metadata?: any;
-  createdAt: string;
-}
-
-// Extend next-auth types
 declare module "next-auth" {
   interface Session {
-    user: User & { id: string };
+    user: User & { id: string; lastActive?: number };
   }
 }

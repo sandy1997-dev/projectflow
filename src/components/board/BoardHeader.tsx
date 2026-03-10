@@ -42,7 +42,7 @@ export function BoardHeader({ board, onRefetch }: any) {
         ))}
       </div>
 
-      <Link href="/analytics" className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl transition">
+      <Link href="/dashboard/analytics" className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl transition">
         <BarChart2 className="w-4 h-4" /> Analytics
       </Link>
 
