@@ -58,27 +58,39 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       // Auto-create workspace for new OAuth users
-      if (account?.provider !== "credentials") {
+      if (account?.provider !== "credentials" && user.email) {
         try {
-          const existing = await prisma.workspaceMember.findFirst({
-            where: { userId: user.id },
+          // 1. LOOKUP THE REAL DB USER BY EMAIL
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email }
           });
-          if (!existing && user.id) {
-            const name = user.name || user.email?.split("@")[0] || "My";
-            let slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-workspace`;
-            const existingSlug = await prisma.workspace.findUnique({ where: { slug } });
-            if (existingSlug) slug = `${slug}-${Date.now()}`;
-            await prisma.workspace.create({
-              data: {
-                name: `${name}'s Workspace`,
-                slug,
-                members: { create: { userId: user.id, role: "OWNER" } },
-              },
+
+          // 2. USE THE REAL MONGODB ID (dbUser.id)
+          if (dbUser) {
+            const existing = await prisma.workspaceMember.findFirst({
+              where: { userId: dbUser.id }, 
             });
+            
+            if (!existing) {
+              const name = dbUser.name || dbUser.email?.split("@")[0] || "My";
+              let slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-workspace`;
+              const existingSlug = await prisma.workspace.findUnique({ where: { slug } });
+              if (existingSlug) slug = `${slug}-${Date.now()}`;
+              
+              await prisma.workspace.create({
+                data: {
+                  name: `${name}'s Workspace`,
+                  slug,
+                  members: { create: { userId: dbUser.id, role: "OWNER" } },
+                },
+              });
+            }
           }
-        } catch (e) { console.error("Workspace auto-create error:", e); }
+        } catch (e) { 
+          console.error("Workspace auto-create error:", e); 
+        }
       }
-      return true;
+      return true; // Always return true so login doesn't crash
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {
@@ -109,11 +121,13 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async createUser({ user }) {
-      // Auto-create workspace for new credential users
+      // NextAuth events fire immediately after a user is added to DB via Prisma Adapter
+      // At this point, user.id is a guaranteed valid MongoDB ID!
       try {
         let slug = `${(user.name || "my").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-workspace`;
         const existing = await prisma.workspace.findUnique({ where: { slug } });
         if (existing) slug = `${slug}-${Date.now()}`;
+        
         await prisma.workspace.create({
           data: {
             name: `${user.name || "My"}'s Workspace`,
@@ -121,7 +135,9 @@ export const authOptions: NextAuthOptions = {
             members: { create: { userId: user.id, role: "OWNER" } },
           },
         });
-      } catch (e) { console.error("Auto workspace error:", e); }
+      } catch (e) { 
+        console.error("Auto workspace error:", e); 
+      }
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
