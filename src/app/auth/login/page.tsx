@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-export default function LoginPage() {
+// 1. Renamed from LoginPage to LoginForm (removed export default)
+function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState("");
@@ -170,5 +171,18 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 2. Added Suspense Boundary wrapper for the default export
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#080d1a" }}>
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
