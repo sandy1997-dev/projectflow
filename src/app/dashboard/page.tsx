@@ -49,7 +49,10 @@ export default function DashboardPage() {
   const allBoards = workspaces.flatMap((w: any) => w.boards ?? []);
   const totalCards = allBoards.reduce((a: number, b: any) => a + (b.cardCount ?? 0), 0);
   const doneCards = allBoards.reduce((a: number, b: any) => a + (b.completedCardCount ?? 0), 0);
-  const members = [...new Set(workspaces.flatMap((w: any) => (w.members ?? []).map((m: any) => m.userId)))].length;
+  
+  // 👈 FIX IS HERE: Changed from [...new Set()].length to new Set().size
+  const members = new Set(workspaces.flatMap((w: any) => (w.members ?? []).map((m: any) => m.userId))).size;
+  
   const completion = totalCards > 0 ? Math.round((doneCards / totalCards) * 100) : 0;
 
   const stats = [
